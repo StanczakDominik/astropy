@@ -14,19 +14,8 @@ from ....coordinates import SkyCoord, Latitude, Longitude, Angle, EarthLocation
 from ....time import Time, TimeDelta
 from ....units.quantity import QuantityInfo
 
-try:
-    import h5py
-except ImportError:
-    HAS_H5PY = False
-else:
-    HAS_H5PY = True
-
-try:
-    import yaml
-except ImportError:
-    HAS_YAML = False
-else:
-    HAS_YAML = True
+h5py = pytest.importorskip('h5py')
+yaml = pytest.importorskip('yaml')
 
 ALL_DTYPES = [np.uint8, np.uint16, np.uint32, np.uint64, np.int8,
               np.int16, np.int32, np.int64, np.float32, np.float64,
@@ -42,7 +31,6 @@ def _default_values(dtype):
         return [1, 2, 3]
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_write_nopath(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -52,7 +40,6 @@ def test_write_nopath(tmpdir):
     assert exc.value.args[0] == "table path should be set via the path= argument"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_notable_nopath(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     h5py.File(test_file, 'w').close()  # create empty file
@@ -61,7 +48,6 @@ def test_read_notable_nopath(tmpdir):
     assert exc.value.args[0] == 'no table found in HDF5 group /'
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_nopath(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -71,7 +57,6 @@ def test_read_nopath(tmpdir):
     assert np.all(t1['a'] == t2['a'])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_write_invalid_path(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -81,7 +66,6 @@ def test_write_invalid_path(tmpdir):
     assert exc.value.args[0] == "table path should end with table name, not /"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_invalid_path(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -92,7 +76,6 @@ def test_read_invalid_path(tmpdir):
     assert exc.value.args[0] == "Path test/ does not exist"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_missing_group(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     h5py.File(test_file, 'w').close()  # create empty file
@@ -101,7 +84,6 @@ def test_read_missing_group(tmpdir):
     assert exc.value.args[0] == "Path test/path/table does not exist"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_missing_table(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     with h5py.File(test_file, 'w') as f:
@@ -111,7 +93,6 @@ def test_read_missing_table(tmpdir):
     assert exc.value.args[0] == "Path test/path/table does not exist"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_missing_group_fileobj(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     with h5py.File(test_file, 'w') as f:
@@ -120,7 +101,6 @@ def test_read_missing_group_fileobj(tmpdir):
         assert exc.value.args[0] == "Path test/path/table does not exist"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_simple(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -130,7 +110,6 @@ def test_read_write_simple(tmpdir):
     assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing_table(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -141,7 +120,6 @@ def test_read_write_existing_table(tmpdir):
     assert exc.value.args[0] == "Table the_table already exists"
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_memory(tmpdir):
     with h5py.File('test', 'w', driver='core', backing_store=False) as output_file:
         t1 = Table()
@@ -151,7 +129,6 @@ def test_read_write_memory(tmpdir):
         assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     h5py.File(test_file, 'w').close()  # create empty file
@@ -162,7 +139,6 @@ def test_read_write_existing(tmpdir):
     assert exc.value.args[0].startswith("File exists:")
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing_overwrite(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     h5py.File(test_file, 'w').close()  # create empty file
@@ -173,7 +149,6 @@ def test_read_write_existing_overwrite(tmpdir):
     assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing_append(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     h5py.File(test_file, 'w').close()  # create empty file
@@ -187,7 +162,6 @@ def test_read_write_existing_append(tmpdir):
     assert np.all(t3['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing_append_groups(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     with h5py.File(test_file, 'w') as f:
@@ -202,7 +176,6 @@ def test_read_write_existing_append_groups(tmpdir):
     assert np.all(t3['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_write_existing_append_overwrite(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
     t1 = Table()
@@ -221,7 +194,6 @@ def test_read_write_existing_append_overwrite(tmpdir):
     assert np.all(t3['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_fileobj(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -236,7 +208,6 @@ def test_read_fileobj(tmpdir):
         assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_filobj_path(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -251,7 +222,6 @@ def test_read_filobj_path(tmpdir):
         assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_filobj_group_path(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -266,7 +236,6 @@ def test_read_filobj_group_path(tmpdir):
         assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_wrong_fileobj():
 
     class FakeFile:
@@ -280,7 +249,6 @@ def test_read_wrong_fileobj():
     assert exc.value.args[0] == 'h5py can only open regular files'
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_write_fileobj(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -295,7 +263,6 @@ def test_write_fileobj(tmpdir):
     assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_write_filobj_group(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -310,7 +277,6 @@ def test_write_filobj_group(tmpdir):
     assert np.all(t2['a'] == [1, 2, 3])
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_write_wrong_type():
 
     t1 = Table()
@@ -321,7 +287,6 @@ def test_write_wrong_type():
                                  'or an h5py File or Group object')
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 @pytest.mark.parametrize(('dtype'), ALL_DTYPES)
 def test_preserve_single_dtypes(tmpdir, dtype):
 
@@ -339,7 +304,6 @@ def test_preserve_single_dtypes(tmpdir, dtype):
     assert t2['a'].dtype == dtype
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_preserve_all_dtypes(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -360,7 +324,6 @@ def test_preserve_all_dtypes(tmpdir):
         assert t2[str(dtype)].dtype == dtype
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_preserve_meta(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -382,7 +345,6 @@ def test_preserve_meta(tmpdir):
         assert np.all(t1.meta[key] == t2.meta[key])
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_preserve_serialized(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
 
@@ -406,7 +368,6 @@ def test_preserve_serialized(tmpdir):
     assert t1.meta == t2.meta
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_preserve_serialized_compatibility_mode(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
 
@@ -435,7 +396,6 @@ def test_preserve_serialized_compatibility_mode(tmpdir):
     assert t1.meta == t2.meta
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_preserve_serialized_in_complicated_path(tmpdir):
     test_file = str(tmpdir.join('test.hdf5'))
 
@@ -459,7 +419,6 @@ def test_preserve_serialized_in_complicated_path(tmpdir):
     assert t1['a'].meta == t2['a'].meta
     assert t1.meta == t2.meta
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_metadata_very_large(tmpdir):
     """Test that very large datasets work, now!"""
     test_file = str(tmpdir.join('test.hdf5'))
@@ -486,7 +445,6 @@ def test_metadata_very_large(tmpdir):
     assert t1.meta == t2.meta
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_metadata_very_large_fails_compatibility_mode(tmpdir):
     """Test that very large metadata do not work in compatibility mode."""
     test_file = str(tmpdir.join('test.hdf5'))
@@ -505,7 +463,6 @@ def test_metadata_very_large_fails_compatibility_mode(tmpdir):
     assert "bject header message is too large" in str(w[1].message)
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_skip_meta(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -527,7 +484,6 @@ def test_skip_meta(tmpdir):
         "Attribute `f` of type {0} cannot be written to HDF5 files - skipping".format(type(t1.meta['f'])))
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_fail_meta_serialize(tmpdir):
 
     test_file = str(tmpdir.join('test.hdf5'))
@@ -541,7 +497,6 @@ def test_fail_meta_serialize(tmpdir):
     assert "cannot represent an object: <class 'str'>" in str(err)
 
 
-@pytest.mark.skipif('not HAS_H5PY')
 def test_read_h5py_objects(tmpdir):
 
     # Regression test - ensure that Datasets are recognized automatically
@@ -638,7 +593,6 @@ compare_attrs = {
 }
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 def test_hdf5_mixins_qtable_to_table(tmpdir):
     """Test writing as QTable and reading as Table.  Ensure correct classes
     come out.
@@ -676,7 +630,6 @@ def test_hdf5_mixins_qtable_to_table(tmpdir):
         assert_objects_equal(col, col2, attrs, compare_class)
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 @pytest.mark.parametrize('table_cls', (Table, QTable))
 def test_hdf5_mixins_as_one(table_cls, tmpdir):
     """Test write/read all cols at once and validate intermediate column names"""
@@ -716,7 +669,6 @@ def test_hdf5_mixins_as_one(table_cls, tmpdir):
     h5.close()
 
 
-@pytest.mark.skipif('not HAS_H5PY or not HAS_YAML')
 @pytest.mark.parametrize('name_col', list(mixin_cols.items()))
 @pytest.mark.parametrize('table_cls', (Table, QTable))
 def test_hdf5_mixins_per_column(table_cls, name_col, tmpdir):
@@ -749,7 +701,6 @@ def test_hdf5_mixins_per_column(table_cls, name_col, tmpdir):
         assert t2[name]._time.jd2.__class__ is np.ndarray
 
 
-@pytest.mark.skipif('HAS_YAML or not HAS_H5PY')
 def test_warn_for_dropped_info_attributes(tmpdir):
     filename = str(tmpdir.join('test.hdf5'))
     t = Table([[1, 2]])
@@ -761,7 +712,6 @@ def test_warn_for_dropped_info_attributes(tmpdir):
         "table contains column(s) with defined 'unit'")
 
 
-@pytest.mark.skipif('HAS_YAML or not HAS_H5PY')
 def test_error_for_mixins_but_no_yaml(tmpdir):
     filename = str(tmpdir.join('test.hdf5'))
     t = Table([mixin_cols['sc']])
@@ -770,7 +720,6 @@ def test_error_for_mixins_but_no_yaml(tmpdir):
     assert "cannot write type SkyCoord column 'col0' to HDF5 without PyYAML" in str(err)
 
 
-@pytest.mark.skipif('not HAS_YAML or not HAS_H5PY')
 def test_round_trip_masked_table_default(tmpdir):
     """Test round-trip of MaskedColumn through HDF5 using default serialization
     that writes a separate mask column.  Note:
